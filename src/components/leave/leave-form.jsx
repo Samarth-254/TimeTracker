@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { leaveRecordsApi } from "@/lib/api";
 import { Loader2 } from "lucide-react";
+import { useEffect, useMemo } from "react";
 import {
   Form,
   FormControl,
@@ -112,6 +113,22 @@ export default function LeaveForm({ onSuccess }) {
   const onSubmit = (data) => {
     createLeaveRecord.mutate(data);
   };
+
+  // Get all leave records from cache (populated by LeaveManagementPage)
+  const leaveRecords = queryClient.getQueryData(["leave-records-and-stats"])?.records || [];
+  // Watch for changes in selected date
+  const selectedDate = form.watch("date");
+  // Check if a paid leave exists for the selected month
+  const paidLeaveTakenThisMonth = useMemo(() => {
+    if (!selectedDate) return false;
+    const month = selectedDate.getMonth();
+    const year = selectedDate.getFullYear();
+    return leaveRecords.some(lr => {
+      if (lr.leave_type !== "paid") return false;
+      const d = new Date(lr.date);
+      return d.getMonth() === month && d.getFullYear() === year;
+    });
+  }, [leaveRecords, selectedDate]);
   
   return (
     <Form {...form}>
@@ -152,15 +169,16 @@ export default function LeaveForm({ onSuccess }) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="paid">Paid Leave</SelectItem>
+                  <SelectItem value="paid" disabled={paidLeaveTakenThisMonth}>Paid Leave</SelectItem>
                   <SelectItem value="unpaid">Unpaid Leave</SelectItem>
                   <SelectItem value="casual">Casual Leave</SelectItem>
                 </SelectContent>
               </Select>
               <FormDescription>
-                {field.value === "paid" && "Deducted from your annual leave balance"}
+                {field.value === "paid" && "Deducted from your annual leave balance. Only one paid leave allowed per month."}
                 {field.value === "unpaid" && "Leave without pay"}
                 {field.value === "casual" && "Short-term leave for personal matters"}
+                {paidLeaveTakenThisMonth && <span className="text-red-400 ml-2">Paid leave already taken for this month</span>}
               </FormDescription>
               <FormMessage />
             </FormItem>

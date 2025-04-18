@@ -167,10 +167,10 @@ export default function LeaveManagementPage() {
               <div>
                 <p className="text-sm font-medium text-gray-400">Paid Leave</p>
                 <h3 className="text-2xl font-bold mt-1">
-                  {leaveData?.stats?.used?.paid || 0} / {leaveData?.stats?.total || 15}
+                  {leaveData?.stats?.used?.paid || 0} / 1
                 </h3>
                 <p className="text-xs text-gray-500 mt-1">
-                  {leaveData?.stats?.remaining || 15} days remaining
+                  {leaveData?.stats?.used?.paid === 1 ? 'Taken this month' : 'Available this month'}
                 </p>
               </div>
               <div className="bg-green-900 rounded-full px-2 py-1 text-xs text-green-400">

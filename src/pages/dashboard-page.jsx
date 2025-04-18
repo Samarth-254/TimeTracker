@@ -53,6 +53,16 @@ export default function DashboardPage() {
         const workingDays = 22;
         const monthlyAvg = monthlyEntries.length > 0 ? monthlyTotal / workingDays : 0;
 
+        // Fetch leave records for the current month
+        const leaveRecords = await leaveRecordsApi.getRange(
+          format(monthStart, 'yyyy-MM-dd'),
+          format(monthEnd, 'yyyy-MM-dd'),
+          user.id
+        );
+        // Calculate paid/unpaid leaves for this month from leave records
+        const paidLeavesThisMonth = leaveRecords.filter(lr => lr.leave_type === 'paid').length;
+        const unpaidLeavesThisMonth = leaveRecords.filter(lr => lr.leave_type === 'unpaid').length;
+
         // Get recent entries sorted by date
         const recentEntries = [...monthlyEntries]
           .sort((a, b) => new Date(b.date) - new Date(a.date))
@@ -77,8 +87,8 @@ export default function DashboardPage() {
           leave: {
             balance: leaveStats.remaining,
             total: leaveStats.total,
-            used: leaveStats.used.paid,
-            unpaid: Math.max(0, leaveStats.used.unpaid - 1) // Subtract 1 from unpaid leaves
+            used: { paid: paidLeavesThisMonth },
+            unpaid: unpaidLeavesThisMonth
           },
           recentEntries: recentEntries
         };
@@ -155,20 +165,28 @@ export default function DashboardPage() {
                 trendType={statsData?.monthly?.trendType || "none"}
               />
               
-              <StatusCard
+              {/* <StatusCard
                 title="Leave Balance"
                 value={`${statsData?.leave?.balance || 15} days`}
                 description="Paid leave remaining"
                 trend={`Used: ${statsData?.leave?.used || 0}`}
                 trendType={statsData?.leave?.used > 0 ? "down" : "none"}
-              />
+              /> */}
 
               <StatusCard
                 title="Total Unpaid Leaves"
                 value={`${statsData?.leave?.unpaid || 0} day${statsData?.leave?.unpaid !== 1 ? 's' : ''}`}
-                description="Unpaid leave taken (excluding 1)"
+                description="Unpaid leave taken"
                 trend={statsData?.leave?.unpaid > 0 ? "Warning" : "None"}
                 trendType={statsData?.leave?.unpaid > 0 ? "alert" : "none"}
+              />
+
+              <StatusCard
+                title="Paid Leave (This Month)"
+                value={`${statsData?.leave?.used?.paid || 0} / 1`}
+                description="Paid leave taken this month"
+                trend={statsData?.leave?.used?.paid === 1 ? 'Maxed' : 'Available'}
+                trendType={statsData?.leave?.used?.paid === 1 ? 'alert' : 'up'}
               />
             </div>
 
