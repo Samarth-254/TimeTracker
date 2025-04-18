@@ -1,0 +1,27 @@
+.rdp-day {
+  border-radius: 50% !important;
+  transition: all 0.2s !important;
+}
+
+.rdp-day_today {
+  background-color: rgba(var(--accent), 0.5) !important;
+  border: 2px solid var(--primary) !important;
+  font-weight: bold !important;
+}
+
+.rdp-day:hover {
+  background-color: var(--accent) !important;
+  color: var(--accent-foreground) !important;
+}
+
+.rdp-cell {
+  text-align: center !important;
+}
+
+.rdp-table {
+  margin: 0 auto !important;
+}
+
+.custom-calendar-override {
+  font-family: inherit;
+}
