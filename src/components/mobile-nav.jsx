@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 
 export default function MobileNav() {
   const [location] = useLocation();
-  const { user, logoutMutation } = useAuth();
+  const { user, logoutMutation, signOut } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   if (!user) return null;
@@ -111,8 +111,10 @@ export default function MobileNav() {
                   </span>
                 </Link>
                 <button
-                  onClick={() => {
-                    logoutMutation.mutate();
+                  onClick={async () => {
+                    if (typeof signOut === 'function') {
+                      await signOut();
+                    }
                     setIsMenuOpen(false);
                   }}
                   className="flex items-center gap-3 rounded-md px-3 py-2 text-foreground hover:bg-accent transition-colors"
