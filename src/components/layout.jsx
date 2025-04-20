@@ -16,7 +16,6 @@ export function Layout({ children }) {
         {/* <div className="h-14 border-b border-border bg-card px-4 flex items-center justify-end">
           <NotificationsList />
         </div> */}
-        
         {children}
       </main>
     </div>
