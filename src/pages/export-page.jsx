@@ -134,12 +134,13 @@ export default function ExportPage() {
         // Add data rows
         data.forEach((entry) => {
           const day = format(parseISO(entry.date), "EEEE");
+          const totalHoursHMS = entry.total_hours ? formatHoursToHMS(Number(entry.total_hours)) : "00:00:00";
           const row = [
             entry.date,
             day,
             entry.check_in || "",
             entry.check_out || "",
-            entry.total_hours || "",
+            totalHoursHMS,
             entry.status
           ].map(field => `"${field}"`).join(",");
           csvContent += row + "\n";

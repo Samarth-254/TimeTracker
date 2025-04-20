@@ -278,17 +278,18 @@ export default function LeaveManagementPage() {
       
       {/* Add Leave Dialog */}
       <Dialog open={isAddLeaveOpen} onOpenChange={setIsAddLeaveOpen}>
-        <DialogContent className="bg-zinc-900 text-white border border-gray-800">
+        <DialogContent className="bg-zinc-900 text-white border border-gray-800 max-h-[90vh] overflow-y-auto flex flex-col">
           <DialogHeader>
             <DialogTitle>Apply for Leave</DialogTitle>
             <DialogDescription className="text-gray-400">
               Fill in the details to request leave
             </DialogDescription>
           </DialogHeader>
-          
-          <LeaveForm 
-            onSuccess={() => setIsAddLeaveOpen(false)}
-          />
+          <div className="flex-1 overflow-y-auto">
+            <LeaveForm 
+              onSuccess={() => setIsAddLeaveOpen(false)}
+            />
+          </div>
         </DialogContent>
       </Dialog>
       

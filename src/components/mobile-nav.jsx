@@ -26,16 +26,22 @@ export default function MobileNav() {
     }
   };
 
-  const initials = user.fullName
-    ? user.fullName.split(' ').map(n => n[0]).join('').toUpperCase()
-    : (user.username ? user.username.substring(0, 2).toUpperCase() : "??");
+  const initials = (user.fullName || user.user_metadata?.full_name)
+    ? (user.fullName || user.user_metadata?.full_name)
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .toUpperCase()
+    : user.username || user.email
+      ? (user.username || user.email).substring(0, 2).toUpperCase()
+      : "U"; // Default fallback if all are undefined
   
   return (
     <>
       <div className="md:hidden bg-card border-b border-border p-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Clock className="text-primary h-6 w-6" />
-          <h1 className="font-bold text-xl">{getTitle()}</h1>
+          <h1 className="font-bold text-xl">Timekeeper</h1>
         </div>
         <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
           <SheetTrigger asChild>
@@ -126,7 +132,7 @@ export default function MobileNav() {
                   {initials}
                 </div>
                 <div>
-                  <p className="font-medium">{user.fullName || user.username}</p>
+                  <p className="font-medium">{user.fullName || user.user_metadata?.full_name || user.username || user.email || "User"}</p>
                   <p className="text-xs text-muted-foreground">{user.email}</p>
                 </div>
               </div>
@@ -136,7 +142,7 @@ export default function MobileNav() {
       </div>
       
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card border-t border-border flex items-center justify-around px-3 z-50">
+      {/* <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card border-t border-border flex items-center justify-around px-3 z-50">
         <Link href="/">
           <span className={`flex flex-col items-center justify-center cursor-pointer ${location === "/" ? "text-primary" : "text-muted-foreground"}`}>
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -177,7 +183,7 @@ export default function MobileNav() {
             <span className="text-xs mt-1">Export</span>
           </span>
         </Link>
-      </div>
+      </div> */}
     </>
   );
 }

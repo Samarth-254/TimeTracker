@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO } from "date-fns";
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO, subWeeks } from "date-fns";
 import { Loader2 } from "lucide-react";
 import { formatDateInIndianTimezone, formatHoursToHMS } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -16,6 +16,7 @@ import { leaveRecordsApi } from "@/lib/api";
 export default function DashboardPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [selectedWeek, setSelectedWeek] = useState("this"); // 'this' or 'last'
 
   // Stats data query with leave stats
   const { data: statsData, isLoading: statsLoading } = useQuery({
@@ -27,11 +28,14 @@ export default function DashboardPage() {
         const today = new Date();
         const weekStart = startOfWeek(today);
         const weekEnd = endOfWeek(today);
+        const lastWeekStart = startOfWeek(subWeeks(today, 1));
+        const lastWeekEnd = endOfWeek(subWeeks(today, 1));
         const monthStart = startOfMonth(today);
         const monthEnd = endOfMonth(today);
 
-        const [weeklyEntries, monthlyEntries, leaveStats] = await Promise.all([
+        const [weeklyEntries, lastWeeklyEntries, monthlyEntries, leaveStats] = await Promise.all([
           getTimeEntriesStats(user.id, format(weekStart, 'yyyy-MM-dd'), format(weekEnd, 'yyyy-MM-dd')),
+          getTimeEntriesStats(user.id, format(lastWeekStart, 'yyyy-MM-dd'), format(lastWeekEnd, 'yyyy-MM-dd')),
           getTimeEntriesStats(user.id, format(monthStart, 'yyyy-MM-dd'), format(monthEnd, 'yyyy-MM-dd')),
           leaveRecordsApi.getLeaveStats(user.id)
         ]);
@@ -43,6 +47,11 @@ export default function DashboardPage() {
         }, 0);
         
         const weeklyAvg = weeklyEntries.length > 0 ? weeklyTotal / 5 : 0;
+        const lastWeeklyTotal = lastWeeklyEntries.reduce((sum, entry) => {
+          const hours = entry?.total_hours ? parseFloat(entry.total_hours) : 0;
+          return sum + hours;
+        }, 0);
+        const lastWeeklyAvg = lastWeeklyEntries.length > 0 ? lastWeeklyTotal / 5 : 0;
 
         // Calculate monthly stats
         const monthlyTotal = monthlyEntries.reduce((sum, entry) => {
@@ -73,6 +82,16 @@ export default function DashboardPage() {
             total: weeklyTotal.toFixed(2),
             average: weeklyAvg.toFixed(2),
             entries: weeklyEntries.map(entry => ({
+              date: entry.date,
+              day_of_week: entry.day_of_week,
+              total_hours: entry.total_hours || 0
+            })),
+            trendType: "up"
+          },
+          lastWeekly: {
+            total: lastWeeklyTotal.toFixed(2),
+            average: lastWeeklyAvg.toFixed(2),
+            entries: lastWeeklyEntries.map(entry => ({
               date: entry.date,
               day_of_week: entry.day_of_week,
               total_hours: entry.total_hours || 0
@@ -203,19 +222,25 @@ export default function DashboardPage() {
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold">Weekly Summary</h3>
                   <div className="flex gap-2">
-                    <button className="inline-flex items-center justify-center rounded-md text-xs h-7 px-2 font-medium bg-accent hover:bg-accent/80">
+                    <button
+                      className={`inline-flex items-center justify-center rounded-md text-xs h-7 px-2 font-medium ${selectedWeek === "this" ? "bg-accent text-primary" : "hover:bg-accent"}`}
+                      onClick={() => setSelectedWeek("this")}
+                    >
                       This Week
                     </button>
-                    <button className="inline-flex items-center justify-center rounded-md text-xs h-7 px-2 font-medium hover:bg-accent">
+                    <button
+                      className={`inline-flex items-center justify-center rounded-md text-xs h-7 px-2 font-medium ${selectedWeek === "last" ? "bg-accent text-primary" : "hover:bg-accent"}`}
+                      onClick={() => setSelectedWeek("last")}
+                    >
                       Last Week
                     </button>
                   </div>
                 </div>
                 
-                <WeeklyChart entries={statsData?.weekly?.entries || []} />
+                <WeeklyChart entries={selectedWeek === "this" ? statsData?.weekly?.entries || [] : statsData?.lastWeekly?.entries || []} />
                 <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-                  <div>Total: <span className="font-mono font-medium text-foreground">{formatHoursToHMS(Number(statsData?.weekly?.total || 0))}</span></div>
-                  <div>Average: <span className="font-mono font-medium text-foreground">{formatHoursToHMS(Number(statsData?.weekly?.average || 0))}</span> / day</div>
+                  <div>Total: <span className="font-mono font-medium text-foreground">{formatHoursToHMS(Number(selectedWeek === "this" ? statsData?.weekly?.total || 0 : statsData?.lastWeekly?.total || 0))}</span></div>
+                  <div>Average: <span className="font-mono font-medium text-foreground">{formatHoursToHMS(Number(selectedWeek === "this" ? statsData?.weekly?.average || 0 : statsData?.lastWeekly?.average || 0))}</span> / day</div>
                 </div>
               </div>
             </div>

@@ -13,9 +13,9 @@ export function Layout({ children }) {
       {/* Main Content Area */}
       <main className="flex-1 overflow-auto">
         {/* Top Bar with Notifications */}
-        <div className="h-14 border-b border-border bg-card px-4 flex items-center justify-end">
+        {/* <div className="h-14 border-b border-border bg-card px-4 flex items-center justify-end">
           <NotificationsList />
-        </div>
+        </div> */}
         
         {children}
       </main>

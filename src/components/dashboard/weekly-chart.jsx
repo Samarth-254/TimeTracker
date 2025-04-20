@@ -40,7 +40,7 @@ export default function WeeklyChart({ entries = [] }) {
           <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
           <XAxis 
             dataKey="name"
-            tick={{ fill: 'var(--muted-foreground)' }}
+            tick={{ fill: '#fff' }}
             axisLine={{ stroke: 'var(--border)' }}
             tickLine={{ stroke: 'var(--border)' }}
           />
