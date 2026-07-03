@@ -29,25 +29,25 @@ Security is configured directly inside PostgreSQL using **Supabase Row-Level Sec
 
 ```mermaid
 graph TD
-    User([User Browser]) -->|Actions: Clock In/Out, Apply Leaves| React[React App (Vite)]
-    React -->|Auth: Sign In/Up| Auth[Supabase Auth]
-    React -->|Queries / Mutations| PostgREST[Supabase PostgREST API]
-    React -->|Real-time Subscriptions| Realtime[Supabase Realtime Channel]
+    User(["User Browser"]) -->|Actions: Clock In/Out, Apply Leaves| React["React App (Vite)"]
+    React -->|Auth: Sign In/Up| Auth["Supabase Auth"]
+    React -->|Queries / Mutations| PostgREST["Supabase PostgREST API"]
+    React -->|Real-time Subscriptions| Realtime["Supabase Realtime Channel"]
     
     subgraph Supabase Backend
-        Auth -->|Creates User Row| Trigger[Auth Trigger: handle_new_user]
-        Trigger -->|Inserts Profile| Profiles[(public.profiles)]
-        Trigger -->|Inserts User| Users[(public.users)]
+        Auth -->|Creates User Row| Trigger["Auth Trigger: handle_new_user"]
+        Trigger -->|Inserts Profile| Profiles[("public.profiles")]
+        Trigger -->|Inserts User| Users[("public.users")]
         
-        PostgREST -->|Validates Permissions| RLS[Row Level Security Policies]
-        RLS -->|Reads/Writes Data| DB[(PostgreSQL Database)]
+        PostgREST -->|Validates Permissions| RLS["Row Level Security Policies"]
+        RLS -->|Reads/Writes Data| DB[("PostgreSQL Database")]
         
         DB -->|PubSub Notify| Realtime
     end
     
-    DB --> TimeEntries[(public.time_entries)]
-    DB --> LeaveRecords[(public.leave_records)]
-    DB --> Notifications[(public.notifications)]
+    DB --> TimeEntries[("public.time_entries")]
+    DB --> LeaveRecords[("public.leave_records")]
+    DB --> Notifications[("public.notifications")]
     
     style React fill:#646CFF,stroke:#fff,stroke-width:2px,color:#fff
     style Auth fill:#3ECF8E,stroke:#fff,stroke-width:2px,color:#fff
@@ -169,9 +169,6 @@ Create a `.env` file in the root folder of the project:
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your-project-anon-key
 ```
-
-> [!WARNING]
-> Keep the environment variable names exactly as shown. Using `VITE_SUPABASE_PUBLISHABLE_KEY` instead of `VITE_SUPABASE_ANON_KEY` will cause the Supabase client connection to fail.
 
 ### 5. Running the Application
 
