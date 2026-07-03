@@ -53,52 +53,7 @@ export default function TimeEntriesTable({
   const [selectedEntry, setSelectedEntry] = useState(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
-  const [localEntries, setLocalEntries] = useState(entries);
   const [isUpdating, setIsUpdating] = useState(false);
-
-  // For debugging - moved after localEntries is defined
-  console.log("Current entries:", localEntries);
-
-  // Update local entries when prop changes
-  useEffect(() => {
-    setLocalEntries(entries);
-  }, [entries]);
-
-  // Subscribe to realtime updates
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const subscription = subscribeToUserTimeEntries(user.id, (payload) => {
-      const { eventType, new: newRecord, old: oldRecord } = payload;
-      
-      // Update the local state immediately for optimistic updates
-      setLocalEntries(currentEntries => {
-        if (eventType === 'INSERT') {
-          return [newRecord, ...currentEntries];
-        }
-        
-        if (eventType === 'UPDATE') {
-          return currentEntries.map(entry => 
-            entry.id === newRecord.id ? newRecord : entry
-          );
-        }
-        
-        if (eventType === 'DELETE') {
-          return currentEntries.filter(entry => entry.id !== oldRecord.id);
-        }
-        
-        return currentEntries;
-      });
-
-      // Also invalidate the query cache to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ["time-entries"] });
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [user?.id, queryClient]);
 
   const form = useForm({
     resolver: zodResolver(timeEntryFormSchema),
@@ -207,8 +162,8 @@ export default function TimeEntriesTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {localEntries.length > 0 ? (
-              localEntries.map((entry) => (
+            {entries.length > 0 ? (
+              entries.map((entry) => (
                 <TableRow key={entry.id} className="border-b border-border hover:bg-accent/30">
 <TableCell className="px-4 py-3 text-sm">
   {format(parseISO(entry.date), "MMM d, yyyy")}
