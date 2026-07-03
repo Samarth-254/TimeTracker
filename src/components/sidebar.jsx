@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { 
@@ -5,12 +6,14 @@ import {
   Calendar, 
   LayoutDashboard, 
   Download, 
-  LogOut 
+  LogOut,
+  Loader2
 } from "lucide-react";
 
 export default function Sidebar() {
   const [location] = useLocation();
   const { user, signOut } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   
   if (!user) return null;
   
@@ -28,6 +31,7 @@ export default function Sidebar() {
   // Handle logout with the correct method
   const handleLogout = async () => {
     try {
+      setIsLoggingOut(true);
       if (typeof signOut === 'function') {
         await signOut();
       } else {
@@ -35,6 +39,8 @@ export default function Sidebar() {
       }
     } catch (error) {
       console.error("Error during logout:", error);
+    } finally {
+      setIsLoggingOut(false);
     }
   };
   
@@ -81,10 +87,15 @@ export default function Sidebar() {
           <li>
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 rounded-md px-3 py-2 text-foreground hover:bg-accent transition-colors"
+              disabled={isLoggingOut}
+              className="w-full flex items-center gap-3 rounded-md px-3 py-2 text-foreground hover:bg-accent transition-colors disabled:opacity-50"
             >
-              <LogOut className="h-5 w-5" />
-              Logout
+              {isLoggingOut ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <LogOut className="h-5 w-5" />
+              )}
+              {isLoggingOut ? "Logging out..." : "Logout"}
             </button>
           </li>
         </ul>

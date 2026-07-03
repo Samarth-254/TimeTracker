@@ -5,6 +5,7 @@ import { z } from "zod";
 import { useAuth } from "@/hooks/use-auth";
 import { Redirect } from "wouter";
 import { Loader2, Clock } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 import {
   Form,
@@ -37,7 +38,10 @@ const registerSchema = z
 
 export default function AuthPage() {
   const [isRegister, setIsRegister] = useState(false);
-  const { signIn, signUp, user, isLoggingIn, isRegistering } = useAuth();
+  const { signIn, signUp, user } = useAuth();
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
+  const { toast } = useToast();
 
   const loginForm = useForm({
     resolver: zodResolver(loginSchema),
@@ -57,13 +61,43 @@ export default function AuthPage() {
     },
   });
 
-  const onLoginSubmit = (data) => {
-    signIn(data);
+  const onLoginSubmit = async (data) => {
+    try {
+      setIsLoggingIn(true);
+      await signIn(data);
+      toast({
+        title: "Welcome back!",
+        description: "Successfully logged in.",
+      });
+    } catch (error) {
+      toast({
+        title: "Login failed",
+        description: error.message || "Please check your credentials and try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
 
-  const onRegisterSubmit = (data) => {
+  const onRegisterSubmit = async (data) => {
     const { confirmPassword, ...userData } = data;
-    signUp(userData);
+    try {
+      setIsRegistering(true);
+      await signUp(userData);
+      toast({
+        title: "Registration successful",
+        description: "You have been registered successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Registration failed",
+        description: error.message || "Could not complete registration.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRegistering(false);
+    }
   };
 
   if (user) return <Redirect to="/" />;

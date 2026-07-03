@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { Clock, Menu, X } from "lucide-react";
+import { Clock, Menu, X, Loader2 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 export default function MobileNav() {
   const [location] = useLocation();
   const { user, logoutMutation, signOut } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   
   if (!user) return null;
   
@@ -112,19 +113,31 @@ export default function MobileNav() {
                 </Link>
                 <button
                   onClick={async () => {
-                    if (typeof signOut === 'function') {
-                      await signOut();
+                    try {
+                      setIsLoggingOut(true);
+                      if (typeof signOut === 'function') {
+                        await signOut();
+                      }
+                      setIsMenuOpen(false);
+                    } catch (error) {
+                      console.error("Error during logout:", error);
+                    } finally {
+                      setIsLoggingOut(false);
                     }
-                    setIsMenuOpen(false);
                   }}
-                  className="flex items-center gap-3 rounded-md px-3 py-2 text-foreground hover:bg-accent transition-colors"
+                  disabled={isLoggingOut}
+                  className="flex items-center gap-3 rounded-md px-3 py-2 text-foreground hover:bg-accent transition-colors disabled:opacity-50 w-full text-left"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                    <polyline points="16 17 21 12 16 7"/>
-                    <line x1="21" y1="12" x2="9" y2="12"/>
-                  </svg>
-                  Logout
+                  {isLoggingOut ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                      <polyline points="16 17 21 12 16 7"/>
+                      <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                  )}
+                  {isLoggingOut ? "Logging out..." : "Logout"}
                 </button>
               </nav>
             </div>
